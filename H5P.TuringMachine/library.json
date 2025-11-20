@@ -1,11 +1,11 @@
 {
   "title": "Turing Machine Simulator",
-  "description": "Interactive Turing Machine simulator for educational purposes",
+  "description": "Interactive Turing Machine simulator",
   "majorVersion": 1,
   "minorVersion": 0,
   "patchVersion": 0,
   "runnable": 1,
-  "author": "H5P Developer",
+  "author": "Mainly AI generated (Claude 4.5)",
   "license": "MIT",
   "machineName": "H5P.TuringMachine",
   "preloadedJs": [

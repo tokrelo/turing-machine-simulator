@@ -21,6 +21,8 @@ required_files=(
     "H5P.TuringMachine/semantics.json"
     "H5P.TuringMachine/turing-machine.js"
     "H5P.TuringMachine/turing-machine.css"
+    "h5p.json"
+    "content/content.json"
 )
 
 echo "Checking required files..."
@@ -42,8 +44,12 @@ if [ -f "H5P.TuringMachine-1.0.h5p" ]; then
 fi
 
 # Create the H5P package (it's just a zip file)
+# Include h5p.json, content/, and H5P.TuringMachine/
+zip H5P.TuringMachine-1.0.h5p h5p.json
 cd H5P.TuringMachine
 zip -r ../H5P.TuringMachine-1.0.h5p * -x "*.DS_Store"
+cd ../content
+zip ../H5P.TuringMachine-1.0.h5p content.json
 cd ..
 
 if [ -f "H5P.TuringMachine-1.0.h5p" ]; then

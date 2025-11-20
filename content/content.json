@@ -1,0 +1,6 @@
+{
+  "welcomeMessage": "Turing Machine Simulator",
+  "defaultInput": "1101",
+  "defaultTransitions": "q0, 0 > q0, 0, R\nq0, 1 > q0, 1, R\nq0, _ > q1, _, L\nq1, 0 > q_accept, 1, N\nq1, 1 > q1, 0, L\nq1, _ > q_accept, 1, N",
+  "defaultAcceptingStates": "q_accept"
+}

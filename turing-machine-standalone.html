@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Turing Machine Simulator</title>
+  <style>
+.h5p-turing-machine {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tm-header {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Tape Display */
+.tm-tape-container {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+}
+
+.tm-state-display {
+  text-align: center;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #2c3e50;
+  min-height: 30px;
+}
+
+.tm-tape {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: auto;
+  padding: 20px 0;
+  position: relative;
+}
+
+.tm-cell {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  background: white;
+  margin: 0 2px;
+  position: relative;
+}
+
+.tm-cell.active {
+  background: #ffffcc;
+  border-color: #ff6b6b;
+  box-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+}
+
+.tm-arrow {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  color: #ff6b6b;
+}
+
+.tm-state-label {
+  position: absolute;
+  top: -55px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: bold;
+  color: #2c3e50;
+  white-space: nowrap;
+  background: #ffffcc;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid #ff6b6b;
+  z-index: 10;
+}
+
+/* Controls */
+.tm-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tm-button {
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #3498db;
+  color: white;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.1s;
+}
+
+.tm-button:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+.tm-button:active {
+  transform: translateY(0);
+}
+
+.tm-button:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tm-button.pause {
+  background: #e67e22;
+}
+
+.tm-button.pause:hover {
+  background: #d35400;
+}
+
+.tm-button.step {
+  background: #9b59b6;
+}
+
+.tm-button.step:hover {
+  background: #8e44ad;
+}
+
+/* Speed Control */
+.tm-speed-control {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+}
+
+.tm-speed-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.tm-speed-value {
+  color: #3498db;
+  min-width: 20px;
+  text-align: center;
+}
+
+.tm-speed-slider {
+  width: 200px;
+  height: 6px;
+  border-radius: 3px;
+  background: #d3d3d3;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.tm-speed-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.tm-speed-slider::-webkit-slider-thumb:hover {
+  background: #2980b9;
+}
+
+.tm-speed-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3498db;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s;
+}
+
+.tm-speed-slider::-moz-range-thumb:hover {
+  background: #2980b9;
+}
+
+/* Input Section */
+.tm-input-section {
+  margin-bottom: 30px;
+}
+
+.tm-section-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.tm-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 2px solid #bdc3c7;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-family: 'Courier New', monospace;
+}
+
+.tm-input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Transition Function */
+.tm-transitions-section {
+  margin-bottom: 30px;
+}
+
+.tm-textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  font-size: 14px;
+  border: 2px solid #bdc3c7;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-family: 'Courier New', monospace;
+  resize: vertical;
+}
+
+.tm-textarea:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Accepting States */
+.tm-accepting-section {
+  margin-bottom: 30px;
+}
+
+/* File Operations */
+.tm-file-operations {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.tm-file-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background: #27ae60;
+  color: white;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.tm-file-button:hover {
+  background: #229954;
+}
+
+.tm-file-input {
+  display: none;
+}
+
+.tm-example-select {
+  padding: 10px 16px;
+  font-size: 14px;
+  border: 2px solid #3498db;
+  border-radius: 5px;
+  background: white;
+  color: #2c3e50;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 200px;
+}
+
+.tm-example-select:hover {
+  background: #ecf0f1;
+  border-color: #2980b9;
+}
+
+.tm-example-select:focus {
+  outline: none;
+  border-color: #2980b9;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* Status Messages */
+.tm-status {
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  display: none;
+}
+
+.tm-status.success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  display: block;
+}
+
+.tm-status.error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  display: block;
+}
+
+.tm-status.info {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  display: block;
+}
+
+.tm-status.running {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  display: block;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tm-cell {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .tm-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Helper text */
+.tm-help-text {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin-top: 5px;
+  font-style: italic;
+}
+  </style>
+</head>
+<body>
+  <div class="h5p-turing-machine" id="tm-container"></div>
+
+  <script>
+(function() {
+  'use strict';
+
+  var TM = {
+    tape: [],
+    headPosition: 0,
+    currentState: 'q0',
+    transitions: {},
+    acceptingStates: new Set(),
+    history: [],
+    isRunning: false,
+    runInterval: null,
+    halted: false,
+    stepDelay: 500,
+    
+    examples: {
+      'binary-counter': {
+        name: 'Binary Counter (increment)',
+        input: '1101',
+        transitions: 'q0, 0 > q0, 0, R\nq0, 1 > q0, 1, R\nq0, _ > q1, _, L\nq1, 0 > q_accept, 1, N\nq1, 1 > q1, 0, L\nq1, _ > q_accept, 1, N',
+        accepting: 'q_accept'
+      },
+      'palindrome-checker': {
+        name: 'Palindrome Checker',
+        input: '10101',
+        transitions: 'q0, 0 > q_check0, _, R\nq0, 1 > q_check1, _, R\nq0, _ > q_accept, _, N\nq_check0, 0 > q_check0, 0, R\nq_check0, 1 > q_check0, 1, R\nq_check0, _ > q_back0, _, L\nq_back0, 0 > q_return, _, L\nq_back0, _ > q_accept, _, N\nq_check1, 0 > q_check1, 0, R\nq_check1, 1 > q_check1, 1, R\nq_check1, _ > q_back1, _, L\nq_back1, 1 > q_return, _, L\nq_back1, _ > q_accept, _, N\nq_return, 0 > q_return, 0, L\nq_return, 1 > q_return, 1, L\nq_return, _ > q0, _, R',
+        accepting: 'q_accept'
+      },
+      'unary-adder': {
+        name: 'Unary Adder (111#11 = 11111)',
+        input: '111#11',
+        transitions: 'q0, 1 > q0, 1, R\nq0, # > q1, 1, R\nq1, 1 > q1, 1, R\nq1, _ > q2, _, L\nq2, 1 > q2, 1, L\nq2, _ > q_accept, _, R',
+        accepting: 'q_accept'
+      },
+      'replace-zeros': {
+        name: 'Replace 0s with 1s',
+        input: '10010',
+        transitions: 'q0, 0 > q0, 1, R\nq0, 1 > q0, 1, R\nq0, _ > q_accept, _, N',
+        accepting: 'q_accept'
+      },
+      'triple-ones': {
+        name: 'Detect "111" pattern',
+        input: '0110111',
+        transitions: 'q0, 0 > q0, 0, R\nq0, 1 > q1, 1, R\nq0, _ > q_reject, _, N\nq1, 0 > q0, 0, R\nq1, 1 > q2, 1, R\nq1, _ > q_reject, _, N\nq2, 0 > q0, 0, R\nq2, 1 > q_accept, 1, R\nq2, _ > q_reject, _, N\nq_accept, 0 > q_accept, 0, R\nq_accept, 1 > q_accept, 1, R\nq_accept, _ > q_accept, _, N',
+        accepting: 'q_accept'
+      },
+      'equal-zeros-ones': {
+        name: 'Equal 0s and 1s',
+        input: '0011',
+        transitions: 'q0, 0 > q_find1, X, R\nq0, 1 > q_find0, Y, R\nq0, X > q0, X, R\nq0, Y > q0, Y, R\nq0, _ > q_check, _, L\nq_find1, 0 > q_find1, 0, R\nq_find1, 1 > q_return, Y, L\nq_find1, X > q_find1, X, R\nq_find1, Y > q_find1, Y, R\nq_find0, 0 > q_return, X, L\nq_find0, 1 > q_find0, 1, R\nq_find0, X > q_find0, X, R\nq_find0, Y > q_find0, Y, R\nq_return, 0 > q_return, 0, L\nq_return, 1 > q_return, 1, L\nq_return, X > q_return, X, L\nq_return, Y > q_return, Y, L\nq_return, _ > q0, _, R\nq_check, X > q_check, X, L\nq_check, Y > q_check, Y, L\nq_check, _ > q_accept, _, R',
+        accepting: 'q_accept'
+      },
+      '0n1n': {
+        name: '0^n 1^n (equal 0s then 1s)',
+        input: '000111',
+        transitions: 'q0, 0 > q1, X, R\nq0, Y > q0, Y, R\nq0, _ > q_accept, _, N\nq1, 0 > q1, 0, R\nq1, Y > q1, Y, R\nq1, 1 > q2, Y, L\nq2, 0 > q2, 0, L\nq2, Y > q2, Y, L\nq2, X > q0, X, R',
+        accepting: 'q_accept'
+      },
+      'anbncn': {
+        name: 'a^n b^n c^n',
+        input: 'aaabbbccc',
+        transitions: 'q0, a > q1, X, R\nq0, Y > q0, Y, R\nq0, Z > q0, Z, R\nq0, _ > q_accept, _, N\nq1, a > q1, a, R\nq1, Y > q1, Y, R\nq1, b > q2, Y, R\nq2, b > q2, b, R\nq2, Z > q2, Z, R\nq2, c > q3, Z, L\nq3, Z > q3, Z, L\nq3, b > q3, b, L\nq3, Y > q3, Y, L\nq3, a > q3, a, L\nq3, X > q0, X, R',
+        accepting: 'q_accept'
+      }
+    },
+    
+    init: function() {
+      var container = document.getElementById('tm-container');
+      container.innerHTML = this.createHTML();
+      
+      this.$tapeDisplay = document.querySelector('.tm-tape');
+      this.$stateDisplay = document.querySelector('.tm-state-display');
+      this.$statusDisplay = document.querySelector('.tm-status');
+      this.$inputBox = document.querySelector('.tm-input-box');
+      this.$transitionsBox = document.querySelector('.tm-transitions-box');
+      this.$acceptingBox = document.querySelector('.tm-accepting-box');
+      this.$speedSlider = document.querySelector('.tm-speed-slider');
+      this.$speedValue = document.querySelector('.tm-speed-value');
+      this.$exampleSelect = document.querySelector('.tm-example-select');
+      
+      // Populate examples
+      for (var key in this.examples) {
+        var opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = this.examples[key].name;
+        this.$exampleSelect.appendChild(opt);
+      }
+      
+      // Set defaults
+      this.$inputBox.value = '1101';
+      this.$transitionsBox.value = 'q0, 0 > q0, 0, R\nq0, 1 > q0, 1, R\nq0, _ > q1, _, L\nq1, 0 > q_accept, 1, N\nq1, 1 > q1, 0, L\nq1, _ > q_accept, 1, N';
+      this.$acceptingBox.value = 'q_accept';
+      
+      this.attachEvents();
+      this.reset();
+    },
+    
+    createHTML: function() {
+      return `
+        <div class="tm-header">Turing Machine Simulator</div>
+        <div class="tm-status"></div>
+        <div class="tm-tape-container">
+          <div class="tm-state-display"></div>
+          <div class="tm-tape"></div>
+        </div>
+        <div class="tm-controls">
+          <button class="tm-button step" data-action="step-back">⏮ Step Back</button>
+          <button class="tm-button" data-action="run">▶ Run</button>
+          <button class="tm-button pause" data-action="pause" disabled>⏸ Pause</button>
+          <button class="tm-button step" data-action="step-forward">⏭ Step Forward</button>
+          <button class="tm-button" data-action="reset">🔄 Reset</button>
+        </div>
+        <div class="tm-speed-control">
+          <label class="tm-speed-label">
+            Speed: <span class="tm-speed-value">2</span> steps/sec
+            <input type="range" class="tm-speed-slider" min="1" max="10" value="2" step="1">
+          </label>
+        </div>
+        <div class="tm-input-section">
+          <div class="tm-section-title">Input Tape:</div>
+          <input type="text" class="tm-input tm-input-box" placeholder="Enter input string...">
+          <div class="tm-help-text">Enter the initial content of the tape</div>
+        </div>
+        <div class="tm-transitions-section">
+          <div class="tm-section-title">State Transition Function:</div>
+          <textarea class="tm-textarea tm-transitions-box" placeholder="Enter transitions (one per line)&#10;Format: q0, x > q1, y, D&#10;Example: q0, 0 > q1, 1, R"></textarea>
+          <div class="tm-help-text">Format: currentState, readSymbol > nextState, writeSymbol, Direction (L/R/N)</div>
+        </div>
+        <div class="tm-accepting-section">
+          <div class="tm-section-title">Accepting States:</div>
+          <input type="text" class="tm-input tm-accepting-box" placeholder="q_accept, qf, ...">
+          <div class="tm-help-text">Comma-separated list of accepting states</div>
+        </div>
+        <div class="tm-file-operations">
+          <button class="tm-file-button" data-action="save">💾 Save to File</button>
+          <button class="tm-file-button" data-action="load">📂 Load from File</button>
+          <input type="file" class="tm-file-input" accept=".tm">
+          <select class="tm-example-select">
+            <option value="">📚 Load Example...</option>
+          </select>
+        </div>
+      `;
+    },
+    
+    attachEvents: function() {
+      var self = this;
+      
+      document.querySelector('[data-action="step-back"]').onclick = function() { self.stepBack(); };
+      document.querySelector('[data-action="run"]').onclick = function() { self.run(); };
+      document.querySelector('[data-action="pause"]').onclick = function() { self.pause(); };
+      document.querySelector('[data-action="step-forward"]').onclick = function() { self.stepForward(); };
+      document.querySelector('[data-action="reset"]').onclick = function() { self.reset(); };
+      document.querySelector('[data-action="save"]').onclick = function() { self.saveToFile(); };
+      document.querySelector('[data-action="load"]').onclick = function() { document.querySelector('.tm-file-input').click(); };
+      
+      document.querySelector('.tm-file-input').onchange = function(e) { self.loadFromFile(e.target.files[0]); };
+      this.$exampleSelect.onchange = function() {
+        if (this.value) {
+          self.loadExample(this.value);
+          this.value = '';
+        }
+      };
+      
+      this.$inputBox.oninput = function() {
+        if (!self.isRunning) self.reset();
+      };
+      
+      this.$speedSlider.oninput = function() {
+        var stepsPerSec = parseInt(this.value);
+        self.$speedValue.textContent = stepsPerSec;
+        self.stepDelay = 1000 / stepsPerSec;
+        if (self.isRunning) {
+          self.pause();
+          self.run();
+        }
+      };
+    },
+    
+    parseTransitions: function(text) {
+      var transitions = {};
+      var lines = text.split('\n');
+      
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (!line || line.startsWith('#')) continue;
+        
+        var match = line.match(/^\s*(\w+)\s*,\s*(.)\s*>\s*(\w+)\s*,\s*(.)\s*,\s*([LRN])\s*$/);
+        if (match) {
+          var key = match[1] + ',' + match[2];
+          transitions[key] = {
+            nextState: match[3],
+            writeSymbol: match[4],
+            direction: match[5]
+          };
+        }
+      }
+      
+      return transitions;
+    },
+    
+    parseAcceptingStates: function(text) {
+      var states = new Set();
+      var parts = text.split(',');
+      
+      for (var i = 0; i < parts.length; i++) {
+        var state = parts[i].trim();
+        if (state) states.add(state);
+      }
+      
+      return states;
+    },
+    
+    reset: function() {
+      this.pause();
+      this.transitions = this.parseTransitions(this.$transitionsBox.value);
+      this.acceptingStates = this.parseAcceptingStates(this.$acceptingBox.value);
+      
+      var input = this.$inputBox.value;
+      this.tape = input ? input.split('') : ['_'];
+      this.headPosition = 0;
+      this.currentState = 'q0';
+      this.history = [];
+      this.halted = false;
+      
+      this.saveState();
+      this.updateDisplay();
+      this.showStatus('Ready', 'info', true);
+    },
+    
+    saveState: function() {
+      this.history.push({
+        tape: this.tape.slice(),
+        headPosition: this.headPosition,
+        currentState: this.currentState,
+        halted: this.halted
+      });
+    },
+    
+    stepForward: function() {
+      if (this.halted) {
+        this.showStatus('Machine has halted', 'info', true);
+        return;
+      }
+      
+      if (this.headPosition < 0) {
+        this.tape.unshift('_');
+        this.headPosition = 0;
+      } else if (this.headPosition >= this.tape.length) {
+        this.tape.push('_');
+      }
+      
+      var currentSymbol = this.tape[this.headPosition];
+      var key = this.currentState + ',' + currentSymbol;
+      var transition = this.transitions[key];
+      
+      if (!transition) {
+        this.halted = true;
+        
+        if (this.acceptingStates.has(this.currentState)) {
+          this.showStatus('ACCEPTED - Machine halted in accepting state: ' + this.currentState, 'success');
+        } else {
+          this.showStatus('REJECTED - No transition defined for state "' + this.currentState + '" with symbol "' + currentSymbol + '"', 'error');
+        }
+        
+        this.updateDisplay();
+        return;
+      }
+      
+      this.tape[this.headPosition] = transition.writeSymbol;
+      this.currentState = transition.nextState;
+      
+      if (transition.direction === 'L') {
+        this.headPosition--;
+      } else if (transition.direction === 'R') {
+        this.headPosition++;
+      }
+      
+      this.saveState();
+      this.updateDisplay();
+    },
+    
+    stepBack: function() {
+      if (this.history.length <= 1) {
+        this.showStatus('Already at initial state', 'info', true);
+        return;
+      }
+      
+      this.history.pop();
+      var prevState = this.history[this.history.length - 1];
+      this.tape = prevState.tape.slice();
+      this.headPosition = prevState.headPosition;
+      this.currentState = prevState.currentState;
+      this.halted = prevState.halted;
+      
+      this.updateDisplay();
+      this.showStatus('Ready', 'info', true);
+    },
+    
+    run: function() {
+      var self = this;
+      
+      if (this.halted) {
+        this.showStatus('Machine has already halted', 'info', true);
+        return;
+      }
+      
+      this.isRunning = true;
+      document.querySelector('[data-action="run"]').disabled = true;
+      document.querySelector('[data-action="pause"]').disabled = false;
+      document.querySelector('[data-action="step-forward"]').disabled = true;
+      document.querySelector('[data-action="step-back"]').disabled = true;
+      this.showStatus('Running...', 'running');
+      
+      this.runInterval = setInterval(function() {
+        self.stepForward();
+        if (self.halted) self.pause();
+      }, this.stepDelay);
+    },
+    
+    pause: function() {
+      this.isRunning = false;
+      
+      if (this.runInterval) {
+        clearInterval(this.runInterval);
+        this.runInterval = null;
+      }
+      
+      document.querySelector('[data-action="run"]').disabled = false;
+      document.querySelector('[data-action="pause"]').disabled = true;
+      document.querySelector('[data-action="step-forward"]').disabled = false;
+      document.querySelector('[data-action="step-back"]').disabled = false;
+      
+      if (!this.halted) {
+        this.showStatus('Ready', 'info', true);
+      }
+    },
+    
+    updateDisplay: function() {
+      var stateText = 'Current State: ' + this.currentState;
+      if (this.halted) stateText += ' (HALTED)';
+      this.$stateDisplay.textContent = stateText;
+      
+      var minPos = Math.min(0, this.headPosition - 5);
+      var maxPos = Math.max(this.tape.length - 1, this.headPosition + 5);
+      
+      var html = '';
+      for (var i = minPos; i <= maxPos; i++) {
+        var symbol = (i >= 0 && i < this.tape.length) ? this.tape[i] : '_';
+        var isActive = (i === this.headPosition);
+        
+        html += '<div class="tm-cell' + (isActive ? ' active' : '') + '">';
+        if (isActive) {
+          html += '<div class="tm-arrow">↓</div>';
+          html += '<div class="tm-state-label">' + this.currentState + '</div>';
+        }
+        html += symbol;
+        html += '</div>';
+      }
+      
+      this.$tapeDisplay.innerHTML = html;
+    },
+    
+    showStatus: function(message, type, persistent) {
+      var self = this;
+      this.$statusDisplay.className = 'tm-status ' + type;
+      this.$statusDisplay.textContent = message;
+      
+      if (type === 'info' && !persistent) {
+        setTimeout(function() {
+          self.$statusDisplay.className = 'tm-status info';
+          self.$statusDisplay.textContent = 'Ready';
+        }, 3000);
+      }
+    },
+    
+    saveToFile: function() {
+      var content = '# Turing Machine Definition\n';
+      content += '# Format: currentState, readSymbol > nextState, writeSymbol, Direction\n\n';
+      content += '[Transitions]\n';
+      content += this.$transitionsBox.value + '\n\n';
+      content += '[Accepting States]\n';
+      content += this.$acceptingBox.value + '\n\n';
+      content += '[Input]\n';
+      content += this.$inputBox.value + '\n';
+      
+      var blob = new Blob([content], { type: 'text/plain' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'turing-machine.tm';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      this.showStatus('File saved', 'success', false);
+    },
+    
+    loadFromFile: function(file) {
+      var self = this;
+      if (!file) return;
+      
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var content = e.target.result;
+        var transitions = '';
+        var acceptingStates = '';
+        var input = '';
+        var lines = content.split('\n');
+        var currentSection = '';
+        
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i].trim();
+          
+          if (line === '[Transitions]') {
+            currentSection = 'transitions';
+          } else if (line === '[Accepting States]') {
+            currentSection = 'accepting';
+          } else if (line === '[Input]') {
+            currentSection = 'input';
+          } else if (line && !line.startsWith('#')) {
+            if (currentSection === 'transitions') {
+              transitions += line + '\n';
+            } else if (currentSection === 'accepting') {
+              acceptingStates += line;
+            } else if (currentSection === 'input') {
+              input += line;
+            }
+          }
+        }
+        
+        self.$transitionsBox.value = transitions.trim();
+        self.$acceptingBox.value = acceptingStates.trim();
+        self.$inputBox.value = input.trim();
+        
+        self.reset();
+        self.showStatus('File loaded successfully', 'success', false);
+      };
+      
+      reader.readAsText(file);
+    },
+    
+    loadExample: function(key) {
+      var example = this.examples[key];
+      if (!example) return;
+      
+      this.$inputBox.value = example.input;
+      this.$transitionsBox.value = example.transitions;
+      this.$acceptingBox.value = example.accepting;
+      
+      this.reset();
+      this.showStatus('Example loaded: ' + example.name, 'success', false);
+    }
+  };
+  
+  // Initialize when page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      TM.init();
+      TM.showStatus('Ready', 'info', true);
+    });
+  } else {
+    TM.init();
+    TM.showStatus('Ready', 'info', true);
+  }
+})();
+  </script>
+</body>
+</html>
