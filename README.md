@@ -1,22 +1,120 @@
-# H5P Turing Machine Simulator
+# Turing Machine Simulator for Moodle
 
-An interactive Turing Machine simulator for Moodle using H5P framework. This educational tool allows students to create, test, and visualize Turing Machine computations.
+A standalone, self-contained Turing Machine simulator designed for educational use in Moodle learning management systems.
 
 ## Features
 
-- **Visual Tape Display**: Real-time visualization of the tape with current head position and state
-- **Interactive Controls**:
-  - Step Back: Undo the last transition
-  - Run: Execute the machine automatically
-  - Pause: Stop automatic execution
-  - Step Forward: Execute one transition
-  - Reset: Return to initial state
-- **Editable Components**:
-  - Input tape configuration
-  - State transition function definition
-  - Accepting states specification
-- **File Management**: Save and load Turing Machine definitions (.tm files)
-- **State Tracking**: Visual feedback for accepting/rejecting states
+- **Interactive Tape Display**: Visual representation of the Turing Machine tape with active cell highlighting
+- **Step-by-Step Execution**: Control buttons for step back, run, pause, step forward, and reset
+- **State Visualization**: Current state displayed with an arrow indicator above the tape
+- **Transition Function Editor**: Define state transitions using the format `q0, x > q1, y, D`
+- **File Operations**: Save and load machine definitions to/from `.tm` files
+- **Speed Control**: Adjustable execution speed (1-10 steps per second)
+- **Persistent Status Messages**: Always shows current status (Ready/Running/Accepted/Rejected)
+- **Example Machines**: Built-in examples including:
+  - Binary counter (increment)
+  - Palindrome checker
+  - Unary adder
+  - Replace zeros with ones
+  - Detect "111" pattern
+  - Equal zeros and ones
+  - 0^n 1^n (equal 0s then 1s)
+  - a^n b^n c^n
+
+## Installation in Moodle
+
+### Option 1: As a File (Simplest)
+
+1. In your course, click **"Bearbeiten einschalten"** (Turn editing on)
+2. Click **"Material oder Aktivität anlegen"** → **"Datei"** (Add an activity → File)
+3. Upload `turing-machine-standalone.html`
+4. Under **"Darstellung"** → **"Anzeige"** select **"In neuem Fenster öffnen"** (Open in new window)
+5. Save
+
+Students click the link and the simulator opens in a new window.
+
+### Option 2: Embedded with iFrame (Best Integration)
+
+1. In your course, click **"Bearbeiten einschalten"** (Turn editing on)
+2. Click **"Material oder Aktivität anlegen"** → **"Textfeld"** (Add an activity → Text field)
+3. Upload `turing-machine-standalone.html` to your course files
+4. In the text editor, click **"HTML-Quellcode bearbeiten"** (`<>` icon)
+5. Insert this code:
+   ```html
+   <iframe src="@@PLUGINFILE@@/turing-machine-standalone.html" 
+           width="100%" 
+           height="900" 
+           style="border: 1px solid #ccc; border-radius: 5px;">
+   </iframe>
+   ```
+6. Exit HTML mode, upload the file via the file icon in the editor
+7. Save
+
+The simulator will be displayed directly in your course.
+
+## Usage
+
+1. **Define Input**: Enter the initial tape content in the Input Tape field
+2. **Set Transitions**: Define state transitions in the format:
+   ```
+   q0, 0 > q1, 1, R
+   q0, 1 > q2, 0, L
+   ```
+   Where:
+   - `q0` = current state
+   - `0` = symbol to read
+   - `q1` = next state
+   - `1` = symbol to write
+   - `R/L/N` = direction (Right/Left/None)
+
+3. **Set Accepting States**: List accepting states (comma-separated)
+4. **Control Execution**:
+   - **Step Forward**: Execute one transition
+   - **Step Back**: Undo last transition
+   - **Run**: Execute continuously at selected speed
+   - **Pause**: Stop continuous execution
+   - **Reset**: Return to initial state
+
+5. **File Operations**:
+   - **Save to File**: Export machine definition as `.tm` file
+   - **Load from File**: Import machine definition
+   - **Load Example**: Select from built-in examples
+
+## File Format
+
+`.tm` files use this format:
+
+```
+# Turing Machine Definition
+
+[Transitions]
+q0, 0 > q0, 0, R
+q0, 1 > q0, 1, R
+q0, _ > q1, _, L
+
+[Accepting States]
+q_accept
+
+[Input]
+1101
+```
+
+## Technical Details
+
+- Pure HTML/CSS/JavaScript - no external dependencies
+- ES5 JavaScript for maximum browser compatibility
+- Fully self-contained in a single HTML file
+- Works in any modern browser
+- Responsive design for mobile and desktop
+
+## Files
+
+- `turing-machine-standalone.html` - Complete simulator (upload this to Moodle)
+- `README.md` - This file
+
+## License
+
+Educational use allowed. Feel free to modify and distribute.
 
 ## Installation
 
