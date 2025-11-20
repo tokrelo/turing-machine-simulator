@@ -28,6 +28,59 @@ H5P.TuringMachine = (function ($) {
     this.isRunning = false;
     this.runInterval = null;
     this.halted = false;
+    this.stepDelay = 500; // Default speed in milliseconds
+    
+    // Predefined example machines
+    this.examples = {
+      'binary-counter': {
+        name: 'Binary Counter (increment)',
+        input: '1101',
+        transitions: 'q0, 0 > q0, 0, R\nq0, 1 > q0, 1, R\nq0, _ > q1, _, L\nq1, 0 > q_accept, 1, N\nq1, 1 > q1, 0, L\nq1, _ > q_accept, 1, N',
+        accepting: 'q_accept'
+      },
+      'palindrome-checker': {
+        name: 'Palindrome Checker',
+        input: '10101',
+        transitions: 'q0, 0 > q_check0, _, R\nq0, 1 > q_check1, _, R\nq0, _ > q_accept, _, N\nq_check0, 0 > q_check0, 0, R\nq_check0, 1 > q_check0, 1, R\nq_check0, _ > q_back0, _, L\nq_back0, 0 > q_return, _, L\nq_back0, _ > q_accept, _, N\nq_check1, 0 > q_check1, 0, R\nq_check1, 1 > q_check1, 1, R\nq_check1, _ > q_back1, _, L\nq_back1, 1 > q_return, _, L\nq_back1, _ > q_accept, _, N\nq_return, 0 > q_return, 0, L\nq_return, 1 > q_return, 1, L\nq_return, _ > q0, _, R',
+        accepting: 'q_accept'
+      },
+      'unary-adder': {
+        name: 'Unary Adder (111#11 = 11111)',
+        input: '111#11',
+        transitions: 'q0, 1 > q0, 1, R\nq0, # > q1, 1, R\nq1, 1 > q1, 1, R\nq1, _ > q2, _, L\nq2, 1 > q2, 1, L\nq2, _ > q_accept, _, R',
+        accepting: 'q_accept'
+      },
+      'replace-zeros': {
+        name: 'Replace 0s with 1s',
+        input: '10010',
+        transitions: 'q0, 0 > q0, 1, R\nq0, 1 > q0, 1, R\nq0, _ > q_accept, _, N',
+        accepting: 'q_accept'
+      },
+      'triple-ones': {
+        name: 'Detect "111" pattern',
+        input: '0110111',
+        transitions: 'q0, 0 > q0, 0, R\nq0, 1 > q1, 1, R\nq0, _ > q_reject, _, N\nq1, 0 > q0, 0, R\nq1, 1 > q2, 1, R\nq1, _ > q_reject, _, N\nq2, 0 > q0, 0, R\nq2, 1 > q_accept, 1, R\nq2, _ > q_reject, _, N\nq_accept, 0 > q_accept, 0, R\nq_accept, 1 > q_accept, 1, R\nq_accept, _ > q_accept, _, N',
+        accepting: 'q_accept'
+      },
+      'equal-zeros-ones': {
+        name: 'Equal 0s and 1s',
+        input: '0011',
+        transitions: 'q0, 0 > q_find1, X, R\nq0, 1 > q_find0, Y, R\nq0, X > q0, X, R\nq0, Y > q0, Y, R\nq0, _ > q_check, _, L\nq_find1, 0 > q_find1, 0, R\nq_find1, 1 > q_return, Y, L\nq_find1, X > q_find1, X, R\nq_find1, Y > q_find1, Y, R\nq_find0, 0 > q_return, X, L\nq_find0, 1 > q_find0, 1, R\nq_find0, X > q_find0, X, R\nq_find0, Y > q_find0, Y, R\nq_return, 0 > q_return, 0, L\nq_return, 1 > q_return, 1, L\nq_return, X > q_return, X, L\nq_return, Y > q_return, Y, L\nq_return, _ > q0, _, R\nq_check, X > q_check, X, L\nq_check, Y > q_check, Y, L\nq_check, _ > q_accept, _, R',
+        accepting: 'q_accept'
+      },
+      '0n1n': {
+        name: '0^n 1^n (equal 0s then 1s)',
+        input: '000111',
+        transitions: 'q0, 0 > q1, X, R\nq0, Y > q0, Y, R\nq0, _ > q_accept, _, N\nq1, 0 > q1, 0, R\nq1, Y > q1, Y, R\nq1, 1 > q2, Y, L\nq2, 0 > q2, 0, L\nq2, Y > q2, Y, L\nq2, X > q0, X, R',
+        accepting: 'q_accept'
+      },
+      'anbncn': {
+        name: 'a^n b^n c^n',
+        input: 'aaabbbccc',
+        transitions: 'q0, a > q1, X, R\nq0, Y > q0, Y, R\nq0, Z > q0, Z, R\nq0, _ > q_accept, _, N\nq1, a > q1, a, R\nq1, Y > q1, Y, R\nq1, b > q2, Y, R\nq2, b > q2, b, R\nq2, Z > q2, Z, R\nq2, c > q3, Z, L\nq3, Z > q3, Z, L\nq3, b > q3, b, L\nq3, Y > q3, Y, L\nq3, a > q3, a, L\nq3, X > q0, X, R',
+        accepting: 'q_accept'
+      }
+    };
   }
 
   /**
@@ -47,6 +100,17 @@ H5P.TuringMachine = (function ($) {
     this.$inputBox = $container.find('.tm-input-box');
     this.$transitionsBox = $container.find('.tm-transitions-box');
     this.$acceptingBox = $container.find('.tm-accepting-box');
+    this.$speedSlider = $container.find('.tm-speed-slider');
+    this.$speedValue = $container.find('.tm-speed-value');
+    this.$exampleSelect = $container.find('.tm-example-select');
+    
+    // Populate example dropdown
+    for (var key in this.examples) {
+      var example = this.examples[key];
+      this.$exampleSelect.append(
+        $('<option></option>').val(key).text(example.name)
+      );
+    }
     
     // Set default values
     this.$inputBox.val(this.params.defaultInput);
@@ -82,6 +146,13 @@ H5P.TuringMachine = (function ($) {
         <button class="tm-button" data-action="reset">🔄 Reset</button>
       </div>
       
+      <div class="tm-speed-control">
+        <label class="tm-speed-label">
+          Speed: <span class="tm-speed-value">2</span> steps/sec
+          <input type="range" class="tm-speed-slider" min="1" max="10" value="2" step="1">
+        </label>
+      </div>
+      
       <div class="tm-input-section">
         <div class="tm-section-title">Input Tape:</div>
         <input type="text" class="tm-input tm-input-box" placeholder="Enter input string...">
@@ -104,6 +175,9 @@ H5P.TuringMachine = (function ($) {
         <button class="tm-file-button" data-action="save">💾 Save to File</button>
         <button class="tm-file-button" data-action="load">📂 Load from File</button>
         <input type="file" class="tm-file-input" accept=".tm">
+        <select class="tm-example-select">
+          <option value="">📚 Load Example...</option>
+        </select>
       </div>
     `;
   };
@@ -148,10 +222,32 @@ H5P.TuringMachine = (function ($) {
       self.loadFromFile(e.target.files[0]);
     });
     
+    // Example selection
+    this.$exampleSelect.change(function () {
+      var exampleKey = $(this).val();
+      if (exampleKey) {
+        self.loadExample(exampleKey);
+        $(this).val(''); // Reset dropdown
+      }
+    });
+    
     // Input changes should reset the machine
     this.$inputBox.on('input', function () {
       if (!self.isRunning) {
         self.reset();
+      }
+    });
+    
+    // Speed slider
+    this.$speedSlider.on('input', function () {
+      var stepsPerSec = parseInt($(this).val());
+      self.$speedValue.text(stepsPerSec);
+      self.stepDelay = 1000 / stepsPerSec;
+      
+      // Update interval if running
+      if (self.isRunning) {
+        self.pause();
+        self.run();
       }
     });
   };
@@ -337,7 +433,7 @@ H5P.TuringMachine = (function ($) {
       if (self.halted) {
         self.pause();
       }
-    }, 500);
+    }, this.stepDelay);
   };
 
   /**
@@ -486,6 +582,23 @@ H5P.TuringMachine = (function ($) {
     };
     
     reader.readAsText(file);
+  };
+
+  /**
+   * Load an example machine
+   */
+  TuringMachine.prototype.loadExample = function (exampleKey) {
+    var example = this.examples[exampleKey];
+    
+    if (!example) return;
+    
+    // Update UI
+    this.$inputBox.val(example.input);
+    this.$transitionsBox.val(example.transitions);
+    this.$acceptingBox.val(example.accepting);
+    
+    this.reset();
+    this.showStatus('Example loaded: ' + example.name, 'success');
   };
 
   return TuringMachine;
