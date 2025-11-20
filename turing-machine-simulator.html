@@ -830,6 +830,27 @@
       
       this.reset();
       this.showStatus('Example loaded: ' + example.name, 'success', false);
+    },
+    
+    loadFromURL: function() {
+      var params = new URLSearchParams(window.location.search);
+      
+      if (params.has('input')) {
+        this.$inputBox.value = decodeURIComponent(params.get('input'));
+      }
+      
+      if (params.has('transitions')) {
+        this.$transitionsBox.value = decodeURIComponent(params.get('transitions'));
+      }
+      
+      if (params.has('accepting')) {
+        this.$acceptingBox.value = decodeURIComponent(params.get('accepting'));
+      }
+      
+      if (params.has('input') || params.has('transitions') || params.has('accepting')) {
+        this.reset();
+        this.showStatus('Machine loaded from URL', 'success', false);
+      }
     }
   };
   
@@ -837,11 +858,17 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
       TM.init();
-      TM.showStatus('Ready', 'info', true);
+      TM.loadFromURL();
+      if (!new URLSearchParams(window.location.search).has('input')) {
+        TM.showStatus('Ready', 'info', true);
+      }
     });
   } else {
     TM.init();
-    TM.showStatus('Ready', 'info', true);
+    TM.loadFromURL();
+    if (!new URLSearchParams(window.location.search).has('input')) {
+      TM.showStatus('Ready', 'info', true);
+    }
   }
 })();
   </script>
