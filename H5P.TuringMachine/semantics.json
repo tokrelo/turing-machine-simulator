@@ -1,0 +1,31 @@
+[
+  {
+    "name": "welcomeMessage",
+    "type": "text",
+    "label": "Welcome Message",
+    "default": "Turing Machine Simulator",
+    "description": "Message displayed at the top of the simulator"
+  },
+  {
+    "name": "defaultInput",
+    "type": "text",
+    "label": "Default Input",
+    "default": "1101",
+    "description": "Default input for the Turing Machine tape"
+  },
+  {
+    "name": "defaultTransitions",
+    "type": "text",
+    "widget": "textarea",
+    "label": "Default Transition Function",
+    "default": "q0, 0 > q0, 0, R\nq0, 1 > q0, 1, R\nq0, _ > q1, _, L\nq1, 0 > q_accept, 1, N\nq1, 1 > q1, 0, L\nq1, _ > q_accept, 1, N",
+    "description": "Default state transitions (one per line: q0, x > q1, y, D)"
+  },
+  {
+    "name": "defaultAcceptingStates",
+    "type": "text",
+    "label": "Default Accepting States",
+    "default": "q_accept",
+    "description": "Comma-separated list of accepting states"
+  }
+]
